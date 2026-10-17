@@ -43,7 +43,7 @@ public class KitchenService {
         }
     }
 
-    public synchronized int getActiveOrdersCount() {
-        return activeOrders.size();
+    public synchronized void completeCooking(int orderId) {
+        activeOrders.remove(orderId);
     }
 }

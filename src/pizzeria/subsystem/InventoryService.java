@@ -2,7 +2,6 @@ package pizzeria.subsystem;
 
 import pizzeria.exception.OutOfStockException;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class InventoryService {
                 INGREDIENT_PARMESAN,
                 INGREDIENT_GORGONZOLA
         ));
-        recipes.put(KitchenService.FAILING_KITCHEN_PIZZA, List.of(
+        recipes.put("Inferno", List.of(
                 INGREDIENT_DOUGH,
                 INGREDIENT_TOMATO_SAUCE,
                 INGREDIENT_MOZZARELLA,
@@ -98,9 +97,5 @@ public class InventoryService {
             stock.put(ingredient, stock.getOrDefault(ingredient, 0) + 1);
         }
         System.out.println("[Inventory] Ingredients for pizza '" + pizzaType + "' returned to stock: " + requiredIngredients);
-    }
-
-    public Map<String, Integer> getStockSnapshot() {
-        return Collections.unmodifiableMap(stock);
     }
 }

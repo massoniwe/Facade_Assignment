@@ -21,10 +21,6 @@ public class Courier {
         return name;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
     public boolean isAvailable() {
         return available;
     }

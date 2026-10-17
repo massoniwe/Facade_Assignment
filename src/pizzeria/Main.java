@@ -3,14 +3,12 @@ package pizzeria;
 import pizzeria.facade.PizzaOrderFacade;
 import pizzeria.model.OrderRequest;
 import pizzeria.model.OrderResult;
-import pizzeria.subsystem.DeliveryService;
-import pizzeria.subsystem.KitchenService;
-import pizzeria.subsystem.PaymentGateway;
 
 import java.math.BigDecimal;
 
 public class Main {
     public static void main(String[] args) {
+        // Client interacts solely with the Facade
         PizzaOrderFacade pizzaFacade = new PizzaOrderFacade();
 
         System.out.println("===============================================================");
@@ -39,22 +37,23 @@ public class Main {
         OrderResult result2 = pizzaFacade.placeOrder(order2);
         System.out.println("Client received: " + result2);
 
-        // 3. Payment error (Card starts with '0000') -> triggers inventory rollback
+        // 3. Payment error (Card starting with '0000' is declined by bank)
+        //    -> triggers inventory rollback
         OrderRequest order3 = new OrderRequest(
                 "Charlie",
                 "Margherita",
                 new BigDecimal("10.50"),
-                PaymentGateway.DECLINED_CARD_PREFIX + "123456789012",
+                "0000123456789012",
                 "Turan Ave 18"
         );
         OrderResult result3 = pizzaFacade.placeOrder(order3);
         System.out.println("Client received: " + result3);
 
-        // 4. Kitchen error (Pizza 'Inferno' causes simulated oven breakdown)
+        // 4. Kitchen error (Pizza 'Inferno' causes oven breakdown simulation)
         //    -> triggers refund + inventory rollback
         OrderRequest order4 = new OrderRequest(
                 "Dave",
-                KitchenService.FAILING_KITCHEN_PIZZA,
+                "Inferno",
                 new BigDecimal("15.00"),
                 "4400998877665544",
                 "Dostyk Ave 10"
@@ -62,14 +61,14 @@ public class Main {
         OrderResult result4 = pizzaFacade.placeOrder(order4);
         System.out.println("Client received: " + result4);
 
-        // 5. Delivery error (Address is outside coverage zone)
+        // 5. Delivery error (Address is outside pizzeria coverage zone)
         //    -> triggers kitchen cancellation + refund + inventory rollback
         OrderRequest order5 = new OrderRequest(
                 "Eva",
                 "Pepperoni",
                 new BigDecimal("12.99"),
                 "4400998877665544",
-                "Suburban Road 5, " + DeliveryService.OUT_OF_ZONE_KEYWORD
+                "Suburban Road 5, Out of City"
         );
         OrderResult result5 = pizzaFacade.placeOrder(order5);
         System.out.println("Client received: " + result5);

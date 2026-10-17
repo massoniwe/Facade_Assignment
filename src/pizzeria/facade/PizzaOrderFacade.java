@@ -69,6 +69,10 @@ public class PizzaOrderFacade {
             System.out.println("[Step 4/4] Scheduling delivery...");
             DeliveryDetails delivery = deliveryService.createDeliveryTask(orderId, request.getDeliveryAddress());
 
+            // Complete simulation tasks and release resources
+            kitchenService.completeCooking(orderId);
+            deliveryService.completeDelivery(delivery.getTrackingCode());
+
             System.out.println("[Facade] Order #" + orderId + " successfully completed!");
             return OrderResult.success(
                     orderId,
@@ -85,22 +89,22 @@ public class PizzaOrderFacade {
 
         } catch (PaymentFailedException e) {
             System.out.println("[Facade] FAILURE at Payment step: " + e.getMessage());
-            compensate(ingredientsReserved, pizzaType, null, price, null);
+            compensate(ingredientsReserved, pizzaType, null, price, null, null);
             return OrderResult.failure(pizzaType, "Payment failed - " + e.getMessage());
 
         } catch (KitchenException e) {
             System.out.println("[Facade] FAILURE at Kitchen step: " + e.getMessage());
-            compensate(ingredientsReserved, pizzaType, transactionId, price, null);
+            compensate(ingredientsReserved, pizzaType, transactionId, price, null, null);
             return OrderResult.failure(pizzaType, "Kitchen error - " + e.getMessage());
 
         } catch (DeliveryUnavailableException e) {
             System.out.println("[Facade] FAILURE at Delivery step: " + e.getMessage());
-            compensate(ingredientsReserved, pizzaType, transactionId, price, orderId);
+            compensate(ingredientsReserved, pizzaType, transactionId, price, orderId, null);
             return OrderResult.failure(pizzaType, "Delivery error - " + e.getMessage());
 
         } catch (Exception e) {
             System.out.println("[Facade] UNEXPECTED ERROR: " + e.getMessage());
-            compensate(ingredientsReserved, pizzaType, transactionId, price, orderId);
+            compensate(ingredientsReserved, pizzaType, transactionId, price, orderId, null);
             return OrderResult.failure(pizzaType, "System error: " + e.getMessage());
         }
     }
@@ -109,8 +113,12 @@ public class PizzaOrderFacade {
      * Executes compensating transactions (rollback) in reverse order of operation execution.
      */
     private void compensate(boolean rollbackInventory, String pizzaType,
-                            String transactionId, BigDecimal price, Integer orderId) {
+                            String transactionId, BigDecimal price, Integer orderId, String trackingCode) {
         System.out.println("[Facade] --- INITIATING COMPENSATING TRANSACTIONS (ROLLBACK) ---");
+
+        if (trackingCode != null) {
+            deliveryService.cancelDelivery(trackingCode);
+        }
 
         if (orderId != null) {
             kitchenService.cancelCooking(orderId);

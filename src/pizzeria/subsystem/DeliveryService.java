@@ -67,6 +67,13 @@ public class DeliveryService {
         }
     }
 
+    public synchronized void completeDelivery(String trackingCode) {
+        Courier assigned = activeDeliveries.remove(trackingCode);
+        if (assigned != null) {
+            assigned.setAvailable(true);
+        }
+    }
+
     public static class DeliveryDetails {
         private final String trackingCode;
         private final String courierName;
